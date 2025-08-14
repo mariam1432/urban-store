@@ -21,6 +21,7 @@ const CheckoutPage = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("shipping");
+  
   interface ShippingInfo {
     firstName: string;
     lastName: string;
@@ -38,12 +39,14 @@ const CheckoutPage = () => {
     nameOnCard: string;
     paymentMethod: "credit-card" | "paypal";
   }
+  
   interface InputInterface {
     label: string;
     name: keyof ShippingInfo;
     type: string;
     colSpan?: number;
   }
+
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: "",
     lastName: "",
@@ -53,6 +56,7 @@ const CheckoutPage = () => {
     name: "",
     country: "United States",
   });
+
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
     cardNumber: "",
     expiry: "",
@@ -63,6 +67,7 @@ const CheckoutPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  
   const inputArray: InputInterface[] = [
     { label: "First Name*", name: "firstName" as const, type: "text" },
     { label: "Last Name*", name: "lastName" as const, type: "text" },
@@ -70,7 +75,19 @@ const CheckoutPage = () => {
     { label: "City*", name: "city" as const, type: "text" },
     { label: "ZIP Code*", name: "zip" as const, type: "text" },
   ];
+
   const orderItems = state?.items || [];
+
+  // Calculate discount based on state.appliedPromo
+  const calculateDiscount = () => {
+    if (!state.appliedPromo) return 0;
+
+    if (state.appliedPromo.discount < 1) { // Percentage discount
+      return subtotal * state.appliedPromo.discount;
+    }
+    // Fixed amount discount
+    return Math.min(state.appliedPromo.discount, subtotal);
+  };
 
   const subtotal = orderItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -78,7 +95,12 @@ const CheckoutPage = () => {
   );
   const shipping = orderItems.length ? 5.99 : 0;
   const tax = subtotal * 0.1;
-  const total = subtotal + shipping + tax;
+  const discount = calculateDiscount();
+  const total = subtotal + shipping + tax - discount;
+
+  const handleRemovePromo = () => {
+    dispatch({ type: "REMOVE_PROMO" });
+  };
 
   const validateShipping = () => {
     const s = shippingInfo;
@@ -131,6 +153,7 @@ const CheckoutPage = () => {
       paymentMethod: e.target.id as "credit-card" | "paypal",
     });
   };
+
   const handleContinue = () => {
     if (activeTab === "shipping") {
       if (validateShipping()) {
@@ -174,7 +197,6 @@ const CheckoutPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <button
           onClick={() => navigate(-1)}
           className="flex items-center mb-6 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
@@ -186,9 +208,7 @@ const CheckoutPage = () => {
         <h1 className="text-2xl sm:text-3xl font-bold mb-6">Checkout</h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Checkout Form */}
           <div className="lg:w-2/3">
-            {/* Tabs */}
             <div className="flex border-b mb-6">
               <button
                 className={`px-4 py-2 font-medium ${
@@ -212,7 +232,6 @@ const CheckoutPage = () => {
               </button>
             </div>
 
-            {/* Shipping Form */}
             {activeTab === "shipping" && (
               <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -267,7 +286,6 @@ const CheckoutPage = () => {
               </div>
             )}
 
-            {/* Payment Form */}
             {activeTab === "payment" && (
               <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -363,7 +381,6 @@ const CheckoutPage = () => {
               </div>
             )}
 
-            {/* Navigation Buttons */}
             <div className="flex justify-between">
               {activeTab === "payment" ? (
                 <button
@@ -392,7 +409,6 @@ const CheckoutPage = () => {
             </div>
           </div>
 
-          {/* Order Summary Sidebar */}
           <div className="lg:w-1/3">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
               <div className="flex justify-between items-center mb-4">
@@ -413,7 +429,22 @@ const CheckoutPage = () => {
                 </button>
               </div>
 
-              {/* Collapsible Order Details */}
+              {/* Promo Code Display (Read-only with remove option) */}
+              {state.appliedPromo && (
+                <div className="mb-4 p-3 bg-green-50 rounded-lg flex justify-between items-center">
+                  <span className="text-green-700">
+                    Promo applied: {state.appliedPromo.code}
+                  </span>
+                  <button
+                    onClick={handleRemovePromo}
+                    className="text-red-500 hover:text-red-700"
+                    aria-label="Remove promo code"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+
               {showDetails && (
                 <div className="mb-4 border-b pb-4">
                   {orderItems.map((item) => (
@@ -442,6 +473,12 @@ const CheckoutPage = () => {
                   <span>Shipping</span>
                   <span>${shipping.toFixed(2)}</span>
                 </div>
+                {state.appliedPromo && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount ({state.appliedPromo.code})</span>
+                    <span>-${discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Tax</span>
                   <span>${tax.toFixed(2)}</span>
@@ -452,7 +489,6 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* Modal Trigger */}
               <button
                 onClick={() => setShowModal(true)}
                 className="w-full text-center py-2 text-sm text-blue-600 hover:underline mb-4"
@@ -468,106 +504,111 @@ const CheckoutPage = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Order Details Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold">Order Summary</h3>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-gray-500 hover:text-black p-1"
-                  disabled={loading}
-                >
-                  <X size={24} />
-                </button>
-              </div>
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-bold">Order Summary</h3>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="text-gray-500 hover:text-black p-1"
+                    disabled={loading}
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
 
-              <div className="space-y-6">
-                {orderItems.map((item) => (
-                  <div key={item.id} className="flex items-start border-b pb-6">
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg mr-4 flex-shrink-0 overflow-hidden">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-lg">{item.title}</h4>
-                      <div className="flex justify-between items-center mt-2">
-                        <div className="flex items-center border rounded">
-                          <button
-                            className="px-3 py-1 hover:bg-gray-100"
-                            disabled
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span className="px-4 py-1 border-x">
-                            {item.quantity}
+                <div className="space-y-6">
+                  {orderItems.map((item) => (
+                    <div key={item.id} className="flex items-start border-b pb-6">
+                      <div className="w-20 h-20 bg-gray-100 rounded-lg mr-4 flex-shrink-0 overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-lg">{item.title}</h4>
+                        <div className="flex justify-between items-center mt-2">
+                          <div className="flex items-center border rounded">
+                            <button
+                              className="px-3 py-1 hover:bg-gray-100"
+                              disabled
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <span className="px-4 py-1 border-x">
+                              {item.quantity}
+                            </span>
+                            <button
+                              className="px-3 py-1 hover:bg-gray-100"
+                              disabled
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                          <span className="font-medium text-lg">
+                            ${(item.price * item.quantity).toFixed(2)}
                           </span>
-                          <button
-                            className="px-3 py-1 hover:bg-gray-100"
-                            disabled
-                          >
-                            <Plus size={16} />
-                          </button>
                         </div>
-                        <span className="font-medium text-lg">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </span>
                       </div>
                     </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 space-y-3">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>${subtotal.toFixed(2)}</span>
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-6 space-y-3">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span>${shipping.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div>
-                <div className="border-t pt-3 flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <button
-                  onClick={() => {
-                    setShowModal(false);
-                    handleCompleteOrder();
-                  }}
-                  className={`w-full py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 ${
-                    loading ? "opacity-60 cursor-not-allowed" : ""
-                  }`}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    "Processing..."
-                  ) : (
-                    <>
-                      <Check size={20} /> Complete Order
-                    </>
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span>${shipping.toFixed(2)}</span>
+                  </div>
+                  {state.appliedPromo && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({state.appliedPromo.code})</span>
+                      <span>-${discount.toFixed(2)}</span>
+                    </div>
                   )}
-                </button>
+                  <div className="flex justify-between">
+                    <span>Tax</span>
+                    <span>${tax.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t pt-3 flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span>${total.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  <button
+                    onClick={() => {
+                      setShowModal(false);
+                      handleCompleteOrder();
+                    }}
+                    className={`w-full py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 ${
+                      loading ? "opacity-60 cursor-not-allowed" : ""
+                    }`}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      "Processing..."
+                    ) : (
+                      <>
+                        <Check size={20} /> Complete Order
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -31,7 +31,6 @@ const ProductPage = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const { state, dispatch } = useCart();
-  console.log("items", state);
   useEffect(() => {
     if (product) {
       axios
@@ -123,7 +122,24 @@ const ProductPage = () => {
       },
     });
   };
+  const handleBuyNow = () => {
+    if (product.stock <= 0) return;
 
+    dispatch({ type: "CLEAR_CART" });
+
+    dispatch({
+      type: "ADD_TO_CART",
+      payload: {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        image: product.thumbnail,
+        quantity: quantity,
+      },
+    });
+
+    navigate("/checkout");
+  };
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       <button
@@ -347,7 +363,10 @@ const ProductPage = () => {
             >
               {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
             </button>
-            <button className="px-6 py-3 border border-black rounded hover:bg-gray-100 transition-colors flex-1 min-w-[200px]">
+            <button
+              onClick={handleBuyNow}
+              className="px-6 py-3 border border-black rounded hover:bg-gray-100 transition-colors flex-1 min-w-[200px]"
+            >
               Buy Now
             </button>
           </div>

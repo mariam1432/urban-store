@@ -8,16 +8,25 @@ interface CartItem {
   image: string;
 }
 
-interface CartState {
+type PromoCode = {
+  code: string;
+  discount: number;
+  type: "percentage" | "fixed";
+};
+
+type CartState = {
   items: CartItem[];
-}
+  appliedPromo: PromoCode | null;
+};
 
 type CartAction =
   | { type: "ADD_TO_CART"; payload: CartItem }
   | { type: "REMOVE_FROM_CART"; payload: string }
   | { type: "INCREMENT_QUANTITY"; payload: string }
   | { type: "DECREMENT_QUANTITY"; payload: string }
-  | { type: "CLEAR_CART" };
+  | { type: "CLEAR_CART" }
+  | { type: "APPLY_PROMO"; payload: PromoCode }
+  | { type: "REMOVE_PROMO" };
 
 const getLocalStorageCart = (): CartItem[] => {
   if (typeof window !== "undefined") {
@@ -34,7 +43,8 @@ const setLocalStorageCart = (items: CartItem[]) => {
 };
 
 const initialState: CartState = {
-  items: getLocalStorageCart(), 
+  items: getLocalStorageCart(),
+  appliedPromo: null,
 };
 
 const CartContext = createContext<{
@@ -55,6 +65,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       );
       if (existingItem) {
         newState = {
+          ...state,
           items: state.items.map((item) =>
             item.id === action.payload.id
               ? { ...item, quantity: item.quantity + 1 }
@@ -62,16 +73,18 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           ),
         };
       } else {
-        newState = { items: [...state.items, { ...action.payload }] };
+        newState = { ...state, items: [...state.items, { ...action.payload }] };
       }
       break;
     case "REMOVE_FROM_CART":
       newState = {
         items: state.items.filter((item) => item.id !== action.payload),
+        appliedPromo: null,
       };
       break;
     case "INCREMENT_QUANTITY":
       newState = {
+        ...state,
         items: state.items.map((item) =>
           item.id === action.payload
             ? { ...item, quantity: item.quantity + 1 }
@@ -81,6 +94,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       break;
     case "DECREMENT_QUANTITY":
       newState = {
+        ...state,
         items: state.items.map((item) =>
           item.id === action.payload && item.quantity > 1
             ? { ...item, quantity: item.quantity - 1 }
@@ -89,8 +103,12 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       };
       break;
     case "CLEAR_CART":
-      newState = { items: [] };
+      newState = { items: [], appliedPromo: null };
       break;
+    case "APPLY_PROMO":
+      return { ...state, appliedPromo: action.payload };
+    case "REMOVE_PROMO":
+      return { ...state, appliedPromo: null };
     default:
       newState = state;
   }

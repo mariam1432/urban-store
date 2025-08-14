@@ -1,6 +1,13 @@
+import { useState, type SetStateAction } from "react";
 import { ChevronLeft, X, Plus, Minus, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext";
+
+interface PromoCode {
+  code: string;
+  discount: number;
+  type: "fixed" | "percentage";
+}
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -19,13 +26,71 @@ const CartPage = () => {
     }
   };
 
+  const [promoCode, setPromoCode] = useState("");
+  const [promoError, setPromoError] = useState("");
+
+  const validPromoCodes: PromoCode[] = [
+    { code: "SAVE10", discount: 10, type: "fixed" },
+    { code: "FREESHIP", discount: 5.99, type: "fixed" },
+    { code: "SUMMER20", discount: 0.2, type: "percentage" },
+  ];
+
+  const handleApplyPromo = () => {
+    setPromoError("");
+    const foundPromo = validPromoCodes.find(
+      (p) => p.code.toLowerCase() === promoCode.toLowerCase()
+    );
+
+    if (foundPromo) {
+      dispatch({
+        type: "APPLY_PROMO",
+        payload: {
+          code: foundPromo.code,
+          discount: foundPromo.discount,
+          type: foundPromo.type,
+        },
+      });
+    } else {
+      setPromoError("Invalid promo code");
+    }
+  };
+
+  const handleRemovePromo = () => {
+    dispatch({ type: "REMOVE_PROMO" });
+    setPromoCode("");
+    setPromoError("");
+  };
+
+  const handleChangePromo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPromoCode(e.target.value);
+    if (promoError) {
+      setPromoError("");
+    }
+  };
+
+  const handleCheckout = () => {
+    if (promoError) {
+      return;
+    }
+    navigate("/checkout");
+  };
+  const calculateDiscount = () => {
+    if (!state.appliedPromo) return 0;
+
+    if (state.appliedPromo.type === "percentage") {
+      return subtotal * state.appliedPromo.discount;
+    }
+    return Math.min(state.appliedPromo.discount, subtotal);
+  };
+
   const subtotal = state.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
   const shipping = 5.99;
   const tax = subtotal * 0.1;
-  const total = subtotal + shipping + tax;
+  const discount = calculateDiscount();
+  const total = subtotal + shipping + tax - discount;
 
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto">
@@ -62,7 +127,7 @@ const CartPage = () => {
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {/* Cart Items List - Always vertical */}
+          {/* Cart Items List */}
           <div className="space-y-6">
             {state.items.map((item) => (
               <div key={item.id} className="border-b pb-6">
@@ -117,7 +182,7 @@ const CartPage = () => {
             ))}
           </div>
 
-          {/* Order Summary - Always below items */}
+          {/* Order Summary */}
           <div className="border rounded-lg p-6 bg-gray-50">
             <h2 className="text-xl font-bold mb-4">Order Summary</h2>
 
@@ -134,30 +199,67 @@ const CartPage = () => {
                 <span>Tax (10%)</span>
                 <span>${tax.toFixed(2)}</span>
               </div>
+              {state.appliedPromo && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount ({state.appliedPromo.code})</span>
+                  <span>-${discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="border-t pt-3 flex justify-between font-bold">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
 
+            {/* Promo Code Section */}
+            {state.appliedPromo ? (
+              <div className="mb-4 p-3 bg-green-50 rounded-lg flex justify-between items-center">
+                <span className="text-green-700">
+                  Promo applied: {state.appliedPromo.code}
+                </span>
+                <button
+                  onClick={handleRemovePromo}
+                  className="text-red-500 hover:text-red-700"
+                  aria-label="Remove promo code"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <div className="mb-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    value={promoCode}
+                    onChange={handleChangePromo}
+                    type="text"
+                    placeholder="Promo code"
+                    className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-black"
+                    aria-label="Enter promo code"
+                  />
+                  <button
+                    onClick={handleApplyPromo}
+                    className="whitespace-nowrap bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                    aria-label="Apply promo code"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {promoError && (
+                  <div className="text-red-500 text-sm mt-1">{promoError}</div>
+                )}
+              </div>
+            )}
+
             <button
-              onClick={() => navigate("/checkout")}
-              className="w-full py-3 bg-black text-white rounded hover:bg-gray-800 transition-colors mb-4"
+              onClick={handleCheckout}
+              disabled={!!promoError}
+              className={`w-full py-3 bg-black text-white rounded hover:bg-gray-800 transition-colors ${
+                promoError ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              aria-label="Proceed to checkout"
             >
               Proceed to Checkout
             </button>
-
-            {/* Promo Code - Simplified inline version */}
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Promo code"
-                className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-              />
-              <button className="whitespace-nowrap bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
-                Apply
-              </button>
-            </div>
           </div>
         </div>
       )}

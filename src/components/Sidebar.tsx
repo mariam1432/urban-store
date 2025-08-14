@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useFilter } from "./FilterContext";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext";
+import logo from "../assets/images/logo.png";
 import {
   Menu,
   X,
@@ -73,20 +74,24 @@ const Sidebar = () => {
   const handleMinPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setMinPrice(value ? parseFloat(value) : undefined);
+    navigate("/");
   };
 
   const handleMaxPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setMaxPrice(value ? parseFloat(value) : undefined);
+    navigate("/");
   };
 
   const handleChangeCategories = (category: string) => {
     console.log("selected", category);
     setSelectedCategory(category);
+    navigate("/");
   };
 
   const handleKeywordClick = (keyword: string) => {
     setKeyword(keyword);
+    navigate("/");
   };
 
   const handleResetFilters = () => {
@@ -141,11 +146,7 @@ const Sidebar = () => {
         md:translate-x-0 fixed md:static inset-y-0 left-0 w-3/4 md:w-64 p-5 bg-white z-40 
         transition-transform duration-300 ease-in-out overflow-y-auto pt-16 md:pt-5`}
       >
-        <img
-          src="../logo.png"
-          alt="urban store logo"
-          className="w-18 h-20 mx-auto"
-        />
+        <img src={logo} alt="urban store logo" className="w-18 h-20 mx-auto" />
 
         {/* <h1 className="hidden md:block text-2xl font-bold mb-6">Urban Store</h1> */}
 
@@ -166,7 +167,10 @@ const Sidebar = () => {
               value={searchQuery}
               className="border-2 rounded-lg pl-10 pr-3 py-2 w-full focus:border-black focus:ring-0"
               placeholder="Search products..."
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                navigate("/");
+              }}
               aria-label="Search products"
             />
           </div>
