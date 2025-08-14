@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 interface ProductCardProps {
   image: string;
-  id: number;
+  id: number|string;
   title: string;
   price: number;
 }

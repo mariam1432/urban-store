@@ -21,17 +21,41 @@ const CheckoutPage = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("shipping");
+  // Add these right after your imports
+  interface ShippingInfo {
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    zip: string;
+    name: string;
+    country: string;
+  }
 
+  interface PaymentInfo {
+    cardNumber: string;
+    expiry: string;
+    cvv: string;
+    nameOnCard: string;
+    paymentMethod: "credit-card" | "paypal";
+  }
+  interface InputInterface {
+    label: string;
+    name: keyof ShippingInfo;
+    type: string;
+    colSpan?: number;
+  }
   // Form state
-  const [shippingInfo, setShippingInfo] = useState({
+  const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: "",
     lastName: "",
     address: "",
     city: "",
     zip: "",
+    name: "",
     country: "United States",
   });
-  const [paymentInfo, setPaymentInfo] = useState({
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
     cardNumber: "",
     expiry: "",
     cvv: "",
@@ -41,7 +65,13 @@ const CheckoutPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
-
+  const inputArray: InputInterface[] = [
+    { label: "First Name*", name: "firstName" as const, type: "text" },
+    { label: "Last Name*", name: "lastName" as const, type: "text" },
+    { label: "Address*", name: "address" as const, type: "text", colSpan: 2 },
+    { label: "City*", name: "city" as const, type: "text" },
+    { label: "ZIP Code*", name: "zip" as const, type: "text" },
+  ];
   const orderItems = state?.items || [];
 
   const subtotal = orderItems.reduce(
@@ -86,18 +116,26 @@ const CheckoutPage = () => {
   };
 
   // Handlers
-  const handleShippingChange = (e) => {
+  const handleShippingChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
   };
 
-  const handlePaymentChange = (e) => {
+  const handlePaymentChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setPaymentInfo({ ...paymentInfo, [e.target.name]: e.target.value });
   };
 
-  const handlePaymentMethodChange = (e) => {
-    setPaymentInfo({ ...paymentInfo, paymentMethod: e.target.id });
+  const handlePaymentMethodChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setPaymentInfo({
+      ...paymentInfo,
+      paymentMethod: e.target.id as "credit-card" | "paypal",
+    });
   };
-
   const handleContinue = () => {
     if (activeTab === "shipping") {
       if (validateShipping()) {
@@ -189,20 +227,9 @@ const CheckoutPage = () => {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { label: "First Name*", name: "firstName", type: "text" },
-                    { label: "Last Name*", name: "lastName", type: "text" },
-                    {
-                      label: "Address*",
-                      name: "address",
-                      type: "text",
-                      colSpan: 2,
-                    },
-                    { label: "City*", name: "city", type: "text" },
-                    { label: "ZIP Code*", name: "zip", type: "text" },
-                  ].map(({ label, name, type, colSpan }, i) => (
+                  {inputArray.map(({ label, name, type, colSpan }, i) => (
                     <div
-                      key={name}
+                      key={name + i}
                       className={colSpan === 2 ? "md:col-span-2" : ""}
                     >
                       <label className="block text-sm font-medium mb-1">

@@ -1,4 +1,3 @@
-import React from "react";
 import { ChevronLeft, X, Plus, Minus, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext";

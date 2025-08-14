@@ -17,6 +17,7 @@ interface Product {
   images: string[];
   stock: number;
   thumbnail: string;
+  reviews: any[];
 }
 
 const ProductPage = () => {

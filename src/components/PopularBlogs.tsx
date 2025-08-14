@@ -1,5 +1,4 @@
 import { MessageCircle, ThumbsUp, ArrowRight } from "lucide-react";
-import React from "react";
 
 interface Blog {
   title: string;

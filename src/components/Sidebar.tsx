@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useFilter } from "./FilterContext";
 import { useNavigate } from "react-router-dom";
-
+import { useCart } from "./CartContext";
 import {
   Menu,
   X,
@@ -36,13 +36,16 @@ const Sidebar = () => {
     setMaxPrice,
     setKeyword,
   } = useFilter();
-
+  const { state } = useCart();
   const [categories, setCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [cartCount, setCartCount] = useState(0);
+  useEffect(() => {
+    if (state && state.items) setCartCount(state.items.length);
+  }, [state]);
   const keywords = ["apple", "watch", "trend", "shoes", "shirt"];
 
   useEffect(() => {

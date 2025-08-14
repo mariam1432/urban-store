@@ -21,16 +21,19 @@ interface ProductsResponse {
 }
 
 const MainContent = () => {
-  const { searchQuery, selectedCategory, minPrice, maxPrice, keyword } = useFilter();
+  const { searchQuery, selectedCategory, minPrice, maxPrice, keyword } =
+    useFilter();
   const [products, setProducts] = useState<Product[]>([]);
-  const [filter, setFilter] = useState<"all" | "expensive" | "cheap" | "popular">("all");
+  const [filter, setFilter] = useState<
+    "all" | "expensive" | "cheap" | "popular"
+  >("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const itemsPerPage = 12;
-  const [totalProducts, setTotalProducts] = useState(0);
+  // const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -45,7 +48,7 @@ const MainContent = () => {
 
         const response = await axios.get<ProductsResponse>(url);
         setProducts(response.data.products);
-        setTotalProducts(response.data.total);
+        // setTotalProducts(response.data.total);
       } catch (err) {
         setError("Failed to load products");
         console.error("Error fetching products", err);
@@ -95,7 +98,7 @@ const MainContent = () => {
   // Calculate pagination based on filtered products
   const totalFilteredProducts = filteredProducts.length;
   const totalPages = Math.ceil(totalFilteredProducts / itemsPerPage);
-  
+
   // Get current page products
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -111,10 +114,13 @@ const MainContent = () => {
 
   const getPaginationButtons = () => {
     if (totalPages <= 1) return [];
-    
+
     const buttons: number[] = [];
     const maxVisibleButtons = window.innerWidth < 640 ? 3 : 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
+    let startPage = Math.max(
+      1,
+      currentPage - Math.floor(maxVisibleButtons / 2)
+    );
     let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
 
     if (endPage - startPage + 1 < maxVisibleButtons) {
