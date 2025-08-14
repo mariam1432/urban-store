@@ -19,7 +19,6 @@ type CartAction =
   | { type: "DECREMENT_QUANTITY"; payload: string }
   | { type: "CLEAR_CART" };
 
-// Helper functions for localStorage
 const getLocalStorageCart = (): CartItem[] => {
   if (typeof window !== "undefined") {
     const storedCart = localStorage.getItem("cart");
@@ -35,7 +34,7 @@ const setLocalStorageCart = (items: CartItem[]) => {
 };
 
 const initialState: CartState = {
-  items: getLocalStorageCart(), // Initialize from localStorage
+  items: getLocalStorageCart(), 
 };
 
 const CartContext = createContext<{
@@ -96,7 +95,6 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       newState = state;
   }
 
-  // Save to localStorage after each state change
   setLocalStorageCart(newState.items);
   return newState;
 }
@@ -106,7 +104,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // Optional: Sync between tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "cart") {

@@ -19,7 +19,6 @@ const CartPage = () => {
     }
   };
 
-  // Calculate totals
   const subtotal = state.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0

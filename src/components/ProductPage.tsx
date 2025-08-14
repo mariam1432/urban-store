@@ -1,7 +1,7 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, Star } from "lucide-react"; // Using Lucide icons
+import { ChevronLeft, Star } from "lucide-react";
 import ProductCard from "./ProductCard";
 import { useCart } from "./CartContext";
 
@@ -37,7 +37,6 @@ const ProductPage = () => {
       axios
         .get(`https://dummyjson.com/products/category/${product.category}`)
         .then((res) => {
-          // Filter out current product and limit to 4
           setRelatedProducts(
             res.data.products
               .filter((p: any) => p.id !== product.id)
@@ -59,9 +58,9 @@ const ProductPage = () => {
             (item) => item.id === response.data.id
           );
           if (existingItem) {
-            setQuantity(existingItem.quantity); // Set quantity to the existing item's quantity
+            setQuantity(existingItem.quantity);
           } else {
-            setQuantity(1); // Default to 1 if not in cart
+            setQuantity(1);
           }
         })
         .catch((error) => {
@@ -73,7 +72,7 @@ const ProductPage = () => {
   }, [id, state.items]);
 
   const handleBack = () => {
-    navigate(-1); // Go back to previous page
+    navigate(-1);
   };
 
   if (loading) {

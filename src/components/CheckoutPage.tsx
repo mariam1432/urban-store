@@ -21,7 +21,6 @@ const CheckoutPage = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("shipping");
-  // Add these right after your imports
   interface ShippingInfo {
     firstName: string;
     lastName: string;
@@ -45,7 +44,6 @@ const CheckoutPage = () => {
     type: string;
     colSpan?: number;
   }
-  // Form state
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: "",
     lastName: "",
@@ -82,7 +80,6 @@ const CheckoutPage = () => {
   const tax = subtotal * 0.1;
   const total = subtotal + shipping + tax;
 
-  // Validation functions
   const validateShipping = () => {
     const s = shippingInfo;
     if (
@@ -111,11 +108,9 @@ const CheckoutPage = () => {
         return false;
       }
     }
-    // For PayPal or others, add validation if needed
     return true;
   };
 
-  // Handlers
   const handleShippingChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -157,7 +152,6 @@ const CheckoutPage = () => {
     }, 2500);
   };
 
-  // If order completed, show confirmation
   if (orderComplete) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
@@ -380,7 +374,7 @@ const CheckoutPage = () => {
                   Back to Shipping
                 </button>
               ) : (
-                <div></div> // Empty div to maintain space
+                <div></div> 
               )}
               <button
                 onClick={

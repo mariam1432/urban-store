@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useFilter } from "./FilterContext";
 import { Tally3 } from "lucide-react";
 import axios from "axios";
@@ -33,14 +33,13 @@ const MainContent = () => {
   const [error, setError] = useState<string | null>(null);
 
   const itemsPerPage = 12;
-  // const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        let url = `https://dummyjson.com/products?limit=100`; // Fetch enough for client-side filtering
+        let url = `https://dummyjson.com/products?limit=100`;
 
         if (keyword) {
           url = `https://dummyjson.com/products/search?q=${keyword}&limit=100`;
@@ -48,7 +47,6 @@ const MainContent = () => {
 
         const response = await axios.get<ProductsResponse>(url);
         setProducts(response.data.products);
-        // setTotalProducts(response.data.total);
       } catch (err) {
         setError("Failed to load products");
         console.error("Error fetching products", err);
@@ -95,11 +93,10 @@ const MainContent = () => {
     }
   }, [products, selectedCategory, minPrice, maxPrice, searchQuery, filter]);
 
-  // Calculate pagination based on filtered products
+  // Calculating pagination based on filtered products
   const totalFilteredProducts = filteredProducts.length;
   const totalPages = Math.ceil(totalFilteredProducts / itemsPerPage);
 
-  // Get current page products
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
@@ -134,7 +131,6 @@ const MainContent = () => {
     return buttons;
   };
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, minPrice, maxPrice, searchQuery, filter]);
@@ -223,7 +219,7 @@ const MainContent = () => {
           </div>
         )}
 
-        {/* Pagination - Only show if there are multiple pages */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row justify-between items-center mt-8 gap-4">
             <button

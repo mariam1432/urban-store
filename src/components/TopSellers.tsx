@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Check, Plus } from "lucide-react"; // Using Lucide icons
-
+import { useEffect, useState } from "react";
+import { Check, Plus } from "lucide-react"; 
 interface Author {
   name: string;
   isFollowing: boolean;
   image: string;
-  sales?: number; // Added sales metric
-  rating?: number; // Added rating
+  sales?: number; 
+  rating?: number; 
 }
 
 const TopSellers = () => {
@@ -26,9 +25,9 @@ const TopSellers = () => {
         const authorsData: Author[] = data.results.map((user: any) => ({
           name: `${user.name.first} ${user.name.last}`,
           isFollowing: false,
-          image: user.picture.large, // Using higher res image
-          sales: Math.floor(Math.random() * 500) + 100, // Random sales data
-          rating: (Math.random() * 2 + 3).toFixed(1), // Random rating 3-5
+          image: user.picture.large,  
+          sales: Math.floor(Math.random() * 500) + 100, 
+          rating: (Math.random() * 2 + 3).toFixed(1), 
         }));
         setAuthors(authorsData);
       } catch (error) {
