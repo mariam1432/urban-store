@@ -214,7 +214,7 @@ const CartPage = () => {
             {/* Promo Code Section */}
             {state.appliedPromo ? (
               <div className="mb-4 p-3 bg-green-50 rounded-lg flex justify-between items-center">
-                <span className="text-green-700">
+                <span className="text-green-700 text-sm sm:text-base">
                   Promo applied: {state.appliedPromo.code}
                 </span>
                 <button
@@ -227,18 +227,18 @@ const CartPage = () => {
               </div>
             ) : (
               <div className="mb-4">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     value={promoCode}
                     onChange={handleChangePromo}
                     type="text"
                     placeholder="Promo code"
-                    className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-black"
+                    className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-black text-sm sm:text-base"
                     aria-label="Enter promo code"
                   />
                   <button
                     onClick={handleApplyPromo}
-                    className="whitespace-nowrap bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                    className="w-auto text-black border border-black px-4 py-2 rounded-lg hover:bg-gray-800 hover:text-white transition-colors text-sm sm:text-base whitespace-nowrap"
                     aria-label="Apply promo code"
                   >
                     Apply
